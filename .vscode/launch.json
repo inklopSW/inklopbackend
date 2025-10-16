@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-InklopApplication<Inklop_>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.inklop.inklop.InklopApplication",
+            "projectName": "Inklop_",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

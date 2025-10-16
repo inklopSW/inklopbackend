@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.inklop'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0"
+
+    // Hibernate
+    implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.1.Final'
+
+    // Postgres
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Dependencia de Mapper
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // Flyaway
+    implementation group: 'org.flywaydb', name: 'flyway-core', version: '9.22.3'
+
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // AWS
+    implementation 'software.amazon.awssdk:s3:2.25.15'
+
+    // Seguridad
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+    // WebClient
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // Auth0 SDK
+    implementation 'com.auth0:auth0:2.5.0'
+
+    // WebSocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+
+    implementation 'com.cloudinary:cloudinary-http44:1.39.0'
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

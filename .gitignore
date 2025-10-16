@@ -1,0 +1,36 @@
+### Logs ###
+*.log
+logs/
+!**/src/main/**/logs/
+!**/src/test/**/logs/
+
+### Env files ###
+.env
+.env.local
+*.env
+
+/bin/
+/out/
+/target/
+*.class
+
+### Gradle ###
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Docker ###
+/docker-compose.override.yml
+/.docker/
+/.dockerignore
+
+### Spring Boot ###
+/target/
+/*.jar
+/*.war
+
+### OS files ###
+.DS_Store
+Thumbs.db

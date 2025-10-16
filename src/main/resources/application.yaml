@@ -1,0 +1,109 @@
+spring:
+  application:
+    name: Inklop
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}/
+  servlet:
+    multipart:
+      max-file-size: 100MB   # límite por archivo
+      max-request-size: 100MB
+server:
+  servlet:
+    context-path: /api/v1
+  port: ${PORT:8080}
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+
+external:
+  video:
+    api-url: ${EXTERNAL_VIDEO_API_URL}
+
+auth0:
+  domain: ${AUTH0_DOMAIN}
+
+  native-app:
+    client-id: ${AUTH0_NATIVE_CLIENT_ID}
+    client-secret: ${AUTH0_NATIVE_CLIENT_SECRET}
+
+  m2m-app:
+    client-id: ${AUTH0_M2M_CLIENT_ID}
+    client-secret: ${AUTH0_M2M_CLIENT_SECRET}
+    audience: ${AUTH0_AUDIENCE}
+
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
+
+apify:
+  api:
+    key: ${APIFY_API_KEY}
+
+# local environment
+
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME}
+  api_key: ${CLOUDINARY_API_KEY}
+  api_secret: ${CLOUDINARY_API_SECRET}
+
+
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET}
+    region: ${AWS_REGION}
+    access-key: ${AWS_ACCESS_KEY}
+    secret-key: ${AWS_SECRET_KEY}
+    
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  flyway:
+    enabled: false
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:inklop}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:admin}
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    enabled: false
+
+# dev environment
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  flyway:
+    enabled: false
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
