@@ -25,6 +25,7 @@ public interface UserMapper {
     //next
     @Mapping(target = "id", source = "user.id")
     @Mapping(target = "realName", source = "user.realName")
+    @Mapping(target = "username", source = "user.username")
     @Mapping(target = "avatarUrl", source = "user.avatarUrl")
     @Mapping(target = "birthDate", source = "user.birthDate")
     @Mapping(target = "email", source = "user.email")
@@ -34,5 +35,5 @@ public interface UserMapper {
     @Mapping(target = "wallet.balancePEN", source = "wallet.PEN")
     @Mapping(target = "wallet.balanceUSD", source = "wallet.USD")
     @Mapping(target = "socialMedias", source = "socialMedias")
-    LoginResponse toLoginResponse(User user, Wallet wallet, List<SocialMediaResponse> socialMedias);
+    LoginResponse toLoginResponse(User user, Wallet wallet, List<SocialMediaResponse> socialMedias, String username);
 }

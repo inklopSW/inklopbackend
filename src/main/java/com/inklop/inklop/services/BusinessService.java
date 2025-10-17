@@ -56,7 +56,7 @@ public class BusinessService {
         wallet.setUser(user);
         walletRepository.save(wallet);
         
-        return userMapper.toLoginResponse(user, wallet, socialMedias);
+        return userMapper.toLoginResponse(user, wallet, socialMedias, request.businessName());
     }   
         
     

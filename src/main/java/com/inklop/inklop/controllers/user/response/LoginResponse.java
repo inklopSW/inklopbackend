@@ -8,6 +8,7 @@ import java.util.List;
 public record LoginResponse(
         Long id,
         String realName,
+        String username,
         String avatarUrl,
         LocalDate birthDate,
         String email,

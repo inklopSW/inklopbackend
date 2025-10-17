@@ -4,6 +4,7 @@ import com.inklop.inklop.controllers.user.request.LoginRequest;
 import com.inklop.inklop.controllers.user.response.LoginResponse;
 import com.inklop.inklop.controllers.user.response.SocialMediaResponse;
 import com.inklop.inklop.entities.User;
+import com.inklop.inklop.entities.valueObject.user.UserRole;
 import com.inklop.inklop.mappers.UserMapper;
 import com.inklop.inklop.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,17 @@ public class UserService {
                     .map(smS::getSocialMediaResponse)
                     .toList();
 
-            return uM.toLoginResponse(user, user.getWallet(),socialMedias);
+            String username=" ";
+
+
+            if (user.getUserRole().equals(UserRole.BUSINESS)) {
+                username = user.getBusiness().getBusinessName();
+            }
+            if (user.getUserRole().equals(UserRole.CREATOR)) {
+                username = user.getCreator().getUsername();
+            }
+            
+            return uM.toLoginResponse(user, user.getWallet(), socialMedias, username);
         }
 
         throw new IllegalArgumentException("Credenciales inválidas");

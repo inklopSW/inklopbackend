@@ -65,7 +65,7 @@ public class CreatorService {
         wallet.setUser(user);
         walletRepository.save(wallet);
 
-        return userMapper.toLoginResponse(user, wallet, socialMedias);
+        return userMapper.toLoginResponse(user, wallet, socialMedias, request.username());
     }
 
     
