@@ -41,10 +41,6 @@ openai:
   api:
     key: ${OPENAI_API_KEY}
 
-apify:
-  api:
-    key: ${APIFY_API_KEY}
-
 # local environment
 
 cloudinary:
