@@ -25,7 +25,7 @@ public interface UserMapper {
     //next
     @Mapping(target = "id", source = "user.id")
     @Mapping(target = "realName", source = "user.realName")
-    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "username", source = "username")
     @Mapping(target = "avatarUrl", source = "user.avatarUrl")
     @Mapping(target = "birthDate", source = "user.birthDate")
     @Mapping(target = "email", source = "user.email")
