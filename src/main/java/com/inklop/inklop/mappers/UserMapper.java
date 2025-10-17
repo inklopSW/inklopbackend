@@ -19,8 +19,9 @@ public interface UserMapper {
     @Mapping(target = "typeDocument", source = "request.typeDocument")
     @Mapping(target = "document", source = "request.document")
     @Mapping(target = "country", source = "request.country")
+    @Mapping(target = "password", source = "encripted_password")
     @Mapping(target = "city", source = "request.city")
-    User toEntity(UserRegisterRequest request, String password, UserRole userRole);
+    User toEntity(UserRegisterRequest request, String encripted_password, UserRole userRole);
 
     //next
     @Mapping(target = "id", source = "user.id")
