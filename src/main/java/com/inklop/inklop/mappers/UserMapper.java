@@ -48,7 +48,7 @@ public interface UserMapper {
     BusinessResponse toBusinessResponse(User user);
 
     @Mapping(target = "username", source = "user.creator.username")
-    @Mapping(target = "avatar", source = "user.creator.avatarCreator")
+    @Mapping(target = "avatar", source = "user.creator.avatar")
     @Mapping(target = "description", source = "user.creator.description")
     @Mapping(target = "creatorType", source = "user.creator.creatorType")
     @Mapping(target = "categories", source = "categoriesResponse")
