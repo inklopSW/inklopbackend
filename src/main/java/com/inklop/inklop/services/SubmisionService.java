@@ -230,14 +230,19 @@ public class SubmisionService {
 
         for (Submission submission : submissions) {
             BigDecimal payment= new BigDecimal(0);
-            if (submission.getSubmissionPayment() != null) {
-                payment=submission.getSubmissionPayment().getPaymentReceived();
-            }
 
             VideoStatsResponse postResponse= postsByUrl.get(submission.getVideoUrl());
             // VALIDACION SI NO EXISTE LINK
             payment=submission.getCampaign().getCpm().multiply(new BigDecimal(postResponse.views()).divide(new BigDecimal(1000)));
             payment=campaignService.getMaxPaymentAndBudget(submission.getCampaign(), payment);
+            
+            if (submission.getSubmissionStatus().equals(SubmissionStatus.REJECTED)){
+                payment=new BigDecimal(0);
+            }
+
+            if (submission.getSubmissionPayment() != null) {
+                payment=submission.getSubmissionPayment().getPaymentReceived();
+            }
 
             if (submission.getSubmissionStatus().equals(SubmissionStatus.APPROVED) || submission.getSubmissionStatus().equals(SubmissionStatus.PAYED)){
                 if (submission.getSocialMedia().getPlatform().equals(Platform.INSTAGRAM)){

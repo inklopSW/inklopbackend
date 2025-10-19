@@ -1,9 +1,12 @@
 package com.inklop.inklop.services;
 
 import com.inklop.inklop.repositories.BusinessRepository;
+import com.inklop.inklop.repositories.UserRepository;
 import com.inklop.inklop.repositories.WalletRepository;
 import com.inklop.inklop.controllers.campaign.response.FullCampaignResponse.SocialMediaDto;
 import com.inklop.inklop.controllers.webSocket.response.NotificationResponse;
+import com.inklop.inklop.services.RoomService;
+import com.inklop.inklop.entities.User;
 import com.inklop.inklop.controllers.campaign.request.AddCampaignRequest;
 import com.inklop.inklop.controllers.campaign.request.CampaignFullRequest;
 import com.inklop.inklop.controllers.campaign.response.FullCampaignResponse;
@@ -45,6 +48,7 @@ public class CampaignService {
     private final SimpMessagingTemplate messagingTemplate;
     private final WalletRepository walletRepository;
     private final RoomService roomService;
+    private final UserRepository userRepository;
 
 
     private String getSpanishDate(LocalDate date) {
@@ -246,7 +250,8 @@ public class CampaignService {
     }
 
     public List<ShortCampaignResponse> getAllShotCampaignsbyBusiness(Long id) {
-        List<Campaign> campaigns = campaignRepository.findByBusinessId(id);
+        User user = userRepository.findById(id).get();
+        List<Campaign> campaigns = campaignRepository.findByBusinessId(user.getBusiness().getId());
         List<ShortCampaignResponse> shortCampaings = new ArrayList<>();
         for (Campaign campaign: campaigns) {
             String typeAux, category;
