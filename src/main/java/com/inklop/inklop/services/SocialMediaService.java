@@ -42,6 +42,9 @@ public class SocialMediaService {
                 avatar= profile.channel_image();
                 nickname= profile.nickname();
             }
+            else {
+                url= socialMedia.link();
+            }
         
             
         } else {

@@ -1,6 +1,8 @@
 package com.inklop.inklop.mappers;
 
 import com.inklop.inklop.controllers.user.request.UserRegisterRequest;
+import com.inklop.inklop.controllers.user.response.BusinessResponse;
+import com.inklop.inklop.controllers.user.response.CreatorResponse;
 import com.inklop.inklop.controllers.user.response.LoginResponse;
 import com.inklop.inklop.controllers.user.response.SocialMediaResponse;
 import com.inklop.inklop.entities.User;
@@ -37,4 +39,18 @@ public interface UserMapper {
     @Mapping(target = "wallet.balanceUSD", source = "wallet.USD")
     @Mapping(target = "socialMedias", source = "socialMedias")
     LoginResponse toLoginResponse(User user, Wallet wallet, List<SocialMediaResponse> socialMedias, String username);
+
+    @Mapping(target = "bussinessName", source = "user.business.businessName")
+    @Mapping(target = "description", source = "user.business.description")
+    @Mapping(target = "bussinessImage", source = "user.business.avatarBusiness")
+    @Mapping(target = "sector", source = "user.business.sector")
+    @Mapping(target = "businessType", source = "user.business.businessType")
+    BusinessResponse toBusinessResponse(User user);
+
+    @Mapping(target = "username", source = "user.creator.username")
+    @Mapping(target = "avatar", source = "user.creator.avatarCreator")
+    @Mapping(target = "description", source = "user.creator.description")
+    @Mapping(target = "creatorType", source = "user.creator.creatorType")
+    @Mapping(target = "categories", source = "categoriesResponse")
+    CreatorResponse toCreatorResponse(User user, List<CreatorResponse.CreatorCategoryResponse> categoriesResponse);
 }

@@ -20,6 +20,9 @@ import com.inklop.inklop.controllers.user.response.WalletResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/users")
@@ -77,4 +80,11 @@ public class UserController {
     public ResponseEntity<String> changeImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
         return ResponseEntity.ok(uS.changeImage(id, file));
     }
+
+    @GetMapping("/extra_info/{id}")
+    public ResponseEntity<Object> getExtraInfoCreatorOrBusiness(@PathVariable Long id){
+        Object response = uS.getExtraInfoCreatorOrBusiness(id);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    
 } 

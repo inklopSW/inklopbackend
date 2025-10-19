@@ -5,7 +5,6 @@ import com.inklop.inklop.repositories.UserRepository;
 import com.inklop.inklop.repositories.WalletRepository;
 import com.inklop.inklop.controllers.campaign.response.FullCampaignResponse.SocialMediaDto;
 import com.inklop.inklop.controllers.webSocket.response.NotificationResponse;
-import com.inklop.inklop.services.RoomService;
 import com.inklop.inklop.entities.User;
 import com.inklop.inklop.controllers.campaign.request.AddCampaignRequest;
 import com.inklop.inklop.controllers.campaign.request.CampaignFullRequest;

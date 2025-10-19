@@ -1,8 +1,10 @@
 package com.inklop.inklop.services;
 import com.inklop.inklop.controllers.user.request.ChangePasswordRequest;
 import com.inklop.inklop.controllers.user.request.LoginRequest;
+import com.inklop.inklop.controllers.user.response.CreatorResponse;
 import com.inklop.inklop.controllers.user.response.LoginResponse;
 import com.inklop.inklop.controllers.user.response.SocialMediaResponse;
+import com.inklop.inklop.entities.CreatorCategories;
 import com.inklop.inklop.entities.User;
 import com.inklop.inklop.entities.valueObject.user.UserRole;
 import com.inklop.inklop.mappers.UserMapper;
@@ -74,6 +76,23 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public Object getExtraInfoCreatorOrBusiness(Long id){
+        User user = uR.findById(id).get();
+        if(user.getUserRole().equals(UserRole.CREATOR)){
+            List<CreatorResponse.CreatorCategoryResponse> categoryResponse = new java.util.ArrayList<>();
+            for (CreatorCategories categories : user.getCreator().getCreatorCategories()){
+                categoryResponse.add(new CreatorResponse.CreatorCategoryResponse(
+                        categories.getCategory()
+                ));
+            }
+            return uM.toCreatorResponse(user, categoryResponse);
+        } else if (user.getUserRole().equals(UserRole.BUSINESS)) {
+            return uM.toBusinessResponse(user);
+        } else {
+            throw new IllegalArgumentException("User is neither Creator nor Business");
+        }
     }
 
     public String changeImage(Long id, MultipartFile file) throws IOException {
