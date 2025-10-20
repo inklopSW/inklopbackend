@@ -26,8 +26,8 @@ public class Business {
     @Column(name = "business_name",nullable = false)
     private String businessName;
 
-    @Column(name = "ruc", nullable = false)
-    private String RUC;
+    @Column(name = "ruc")
+    private String ruc;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sector", nullable = false)

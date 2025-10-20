@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
@@ -44,6 +45,11 @@ public class BankAccountController {
     @GetMapping("/user/{id}")
     public ResponseEntity<List<BankAccount>> getAllBankAccountsbyUserId(@PathVariable Long id) {
         return ResponseEntity.ok(bankAccountService.getAllBankAccountsbyUserId(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<BankAccount> deleteBankAccount(@PathVariable Long id){
+        return ResponseEntity.ok(bankAccountService.deleteBankAccount(id));
     }
 
     @PostMapping("/withdrawal")

@@ -14,6 +14,7 @@ import com.inklop.inklop.entities.BankAccount;
 import com.inklop.inklop.entities.BankWithdrawal;
 import com.inklop.inklop.entities.Wallet;
 import com.inklop.inklop.entities.valueObject.DateRangeType;
+import com.inklop.inklop.entities.valueObject.Status;
 import com.inklop.inklop.entities.valueObject.campaign.Currency;
 import com.inklop.inklop.entities.valueObject.campaign.PaymentStatus;
 import com.inklop.inklop.repositories.BankAccountRepository;
@@ -31,7 +32,6 @@ public class BankAccountService {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
 
-
     public BankAccount createBankAccount(BankAccountRequest bankAccountRequest){
         BankAccount bankAccount = new BankAccount();
         bankAccount.setBankName(bankAccountRequest.bankName());
@@ -46,8 +46,15 @@ public class BankAccountService {
         return bankAccount;
     }
 
+    public BankAccount deleteBankAccount(Long id){
+        BankAccount bankAccount = bankAccountRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Bank account not found with id: " + id));
+        bankAccount.setStatus(Status.INACTIVE);
+        return bankAccountRepository.save(bankAccount);
+    }
+
     public List<BankAccount> getAllBankAccountsbyUserId(Long userId){
-        return bankAccountRepository.findByUserId(userId);
+        return bankAccountRepository.findByUserIdAndStatus(userId, Status.ACTIVE);
     }
 
     public BankWithdrawalResponseTicket createBankWithdrawal(BankWithdrawalRequest bankWithdrawalRequest){
@@ -127,7 +134,6 @@ public class BankAccountService {
             
         return bankWithdrawalRepository.save(bankWithdrawal);
     }
-
     
     private void refundWithdrawal(BankWithdrawal bankWithdrawal) {
         Wallet wallet = bankWithdrawal.getBankAccount().getUser().getWallet();

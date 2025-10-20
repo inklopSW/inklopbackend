@@ -17,12 +17,13 @@ import lombok.RequiredArgsConstructor;
 public class CampaignPaymentService {
     private final CampaignPaymentRepository campaignPaymentRepository;
 
-    public CampaignPayment saveCampaignPayment(Campaign campaign, BigDecimal amount, Currency currency, String RUC, String businessName, PaymentType paymentType) {
+    public CampaignPayment saveCampaignPayment(Campaign campaign, BigDecimal amount, String description,Currency currency, String RUC, String businessName, PaymentType paymentType) {
         CampaignPayment campaignPayment = new CampaignPayment();
         campaignPayment.setCampaign(campaign);
         campaignPayment.setAmount(amount);
         campaignPayment.setCurrency(currency);
         campaignPayment.setRUC(RUC);
+        campaignPayment.setDescription(description);
         campaignPayment.setBusinessName(businessName);
         campaignPayment.setPaymentType(paymentType);
         return campaignPaymentRepository.save(campaignPayment);

@@ -11,6 +11,7 @@ public record BusinessRequest(
     String businessName,
     String description,
     String businessImage,
+    String ruc,
     BusinessType businessType,
     SectorBusiness sector, // PUNTO DE MEJORA URGENTE: HACER ENUM
     //socialMedia

@@ -45,6 +45,7 @@ public interface UserMapper {
     @Mapping(target = "bussinessImage", source = "user.business.avatarBusiness")
     @Mapping(target = "sector", source = "user.business.sector")
     @Mapping(target = "businessType", source = "user.business.businessType")
+    @Mapping(target = "ruc", source = "user.business.ruc")
     BusinessResponse toBusinessResponse(User user);
 
     @Mapping(target = "username", source = "user.creator.username")

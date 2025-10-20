@@ -29,6 +29,9 @@ public class CampaignPayment {
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
+    @Column(name = "description")
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus; // default

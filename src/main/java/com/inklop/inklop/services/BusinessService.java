@@ -43,6 +43,7 @@ public class BusinessService {
         business.setUser(user);
         business.setBusinessName(request.businessName());
         business.setDescription(request.description());
+        business.setRuc(request.ruc());
         business.setAvatarBusiness(request.businessImage());
         business.setBusinessType(request.businessType());
         business.setSector(request.sector());

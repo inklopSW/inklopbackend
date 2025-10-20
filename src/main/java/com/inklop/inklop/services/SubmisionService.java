@@ -39,7 +39,7 @@ import com.inklop.inklop.repositories.SubmissionPaymentRepository;
 import com.inklop.inklop.repositories.WalletRepository;
 import com.inklop.inklop.repositories.Campaign.CampaignRepository;
 import com.inklop.inklop.services.scrapper.ScrapperService;
-import com.inklop.inklop.services.scrapper.dto.ValueVideo;
+import com.inklop.inklop.services.scrapper.dto.PostResponse;
 import com.inklop.inklop.services.scrapper.dto.VideoStatsResponse;
 import com.inklop.inklop.entities.valueObject.Status;
 
@@ -74,16 +74,16 @@ public class SubmisionService {
             throw new RuntimeException("Social media is inactive");
         }
 
-        ValueVideo videoInfo = scrapperService.postVideoToExternalApi(submissionRequest.videoUrl(), socialMedia.getPlatform(), campaign.getEndDate());
+        PostResponse videoInfo = scrapperService.postVideoToExternalApi(submissionRequest.videoUrl(), socialMedia.getPlatform(), campaign.getEndDate());
         
         Submission submission = new Submission();
         submission.setCampaign(campaign);
         submission.setSocialMedia(socialMedia);
-        submission.setVideoUrl(videoInfo.videoUrl());
+        submission.setVideoUrl(videoInfo.video_url());
         //aca esta lo que es un porcentaje falso ahora los videos seran de prueba 
         submission.setPercentage(71);
 
-        if ( !videoInfo.ownerId().equals(socialMedia.getOwnerId())){
+        if ( !videoInfo.owner_id().equals(socialMedia.getOwnerId())){
             submission.setDescription("video no aprobado x que no coincide con el id");
             submission.setSubmissionStatus(SubmissionStatus.REJECTED);
             submisionRepository.save(submission);
@@ -107,7 +107,7 @@ public class SubmisionService {
         );
             submission.setDescription("Si cumple con los lineamientos");
             submission.setSubmissionStatus(SubmissionStatus.APPROVED);
-            submission.setSavedVideoUrl(videoInfo.videoUrl());
+            submission.setSavedVideoUrl(videoInfo.video_url());
             messagingTemplate.convertAndSend("/topic/newSubmission"+submission.getSocialMedia().getUser().getId(), noti);
             
         } else {
@@ -347,13 +347,15 @@ public class SubmisionService {
         );
     }
 
+    //to views for any problem maybe u know uwu
     private BigDecimal getEngagement(Long likes, Long views, Long coments){
         if (views == 0){
             return new BigDecimal(0);
         }
-        BigDecimal engagement= new BigDecimal(likes+coments).divide(new BigDecimal(views),2, RoundingMode.HALF_UP).multiply(new BigDecimal((100)));
-        
-        return engagement;
+        return new BigDecimal(likes+coments)
+            .divide(new BigDecimal(views),6, RoundingMode.HALF_UP)
+            .multiply(new BigDecimal((100)))
+            .setScale(2, RoundingMode.HALF_UP);
     }
 
     public SubmissionPaymentResponse getPayment(Long id) throws Exception{

@@ -143,8 +143,9 @@ public class CampaignService {
         campaignPaymentService.saveCampaignPayment(
             campaign,
             campaign.getTotalBudget(),
+            "Campaign Initial Payment for: " + campaign.getName(),
             campaign.getCurrency(),
-            campaign.getBusiness().getRUC(),
+            campaign.getBusiness().getRuc(),
             campaign.getBusiness().getBusinessName(),
             PaymentType.BANK_TRANSFER
         );
@@ -172,6 +173,15 @@ public class CampaignService {
         Campaign campaign = campaignRepository.findById(campaignId).get();
         campaign.setTotalBudget(campaign.getTotalBudget().add(request.addOn()));
         campaign.setEndDate(campaign.getEndDate().plusDays(request.days()));
+        campaignPaymentService.saveCampaignPayment(
+            campaign,
+            request.addOn(),
+            "Add On Payment for: " + campaign.getName(),
+            campaign.getCurrency(),
+            campaign.getBusiness().getRuc(),
+            campaign.getBusiness().getBusinessName(),
+            PaymentType.BANK_TRANSFER
+        );
         campaignRepository.save(campaign);
         return new TransaccionComplete(
             campaign.getName(),

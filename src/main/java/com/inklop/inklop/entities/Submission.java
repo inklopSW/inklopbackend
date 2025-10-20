@@ -60,9 +60,6 @@ public class Submission {
     @OneToOne(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     private SubmissionPayment submissionPayment;
 
-    //data de la publicacion scrapeada
-
-
     @PrePersist
     void prePersist() {
         this.submittedAt = LocalDateTime.now();

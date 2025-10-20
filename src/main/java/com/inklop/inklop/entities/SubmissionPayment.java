@@ -49,6 +49,9 @@ public class SubmissionPayment {
     @Column(name="bookmarks")
     private Long bookmarks;
 
+    @Column(name="description")
+    private String description;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus;

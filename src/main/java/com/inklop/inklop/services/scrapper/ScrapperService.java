@@ -3,7 +3,6 @@ package com.inklop.inklop.services.scrapper;
 import com.inklop.inklop.config.ScrapperConfig;
 import com.inklop.inklop.services.scrapper.dto.PostResponse;
 import com.inklop.inklop.services.scrapper.dto.ProfileResponse;
-import com.inklop.inklop.services.scrapper.dto.ValueVideo;
 import com.inklop.inklop.services.scrapper.dto.VideoStatsResponse;
 
 import lombok.AllArgsConstructor;
@@ -38,7 +37,7 @@ public class ScrapperService {
     @Autowired
     private RestTemplate restTemplate; // se inyecta desde RestTemplateConfig
 
-    public ValueVideo postVideoToExternalApi(String videoUrl, Platform platform, LocalDate finalDate) {
+    public PostResponse postVideoToExternalApi(String videoUrl, Platform platform, LocalDate finalDate) {
         // validation
         if (!platform.equals(Platform.INSTAGRAM) && !platform.equals(Platform.TIKTOK)) {
             throw new IllegalArgumentException("Platform not supported for video posting");
@@ -63,11 +62,8 @@ public class ScrapperService {
         // Ejecutar la petición POST
         ResponseEntity<PostResponse> response =
             restTemplate.postForEntity(apiUrl, requestEntity, PostResponse.class);
-
-        // Retornar la respuesta
-        PostResponse postResponse = response.getBody();
         
-        return new ValueVideo(postResponse.video_url(), postResponse.owner_id());
+        return response.getBody();
     }
 
     public Map<String, VideoStatsResponse> getAllPosts(List<String> videoUrls){
@@ -139,12 +135,20 @@ public class ScrapperService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<ProfileResponse> response = restTemplate.postForEntity(
-            apiUrl,
-            requestEntity,
-            ProfileResponse.class);
+        try {
+            ResponseEntity<ProfileResponse> response = restTemplate.postForEntity(
+                apiUrl,
+                requestEntity,
+                ProfileResponse.class);
 
-        return response.getBody();
+            return response.getBody();
+        } catch (HttpClientErrorException e) {
+            log.error("getProfile -> Http error calling scrapper service: {} - responseBody: {}", e.getMessage(), e.getResponseBodyAsString(), e);
+            throw e;
+        } catch (Exception e) {
+            log.error("getProfile -> Unexpected error calling scrapper service: {}", e.getMessage(), e);
+            throw new RuntimeException("Unexpected error calling scrapper service", e);
+        }
     }
 
 
