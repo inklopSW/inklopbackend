@@ -57,7 +57,7 @@ public class CampaignPayment {
     public void prePersist() {
         this.paymentDate = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-        this.paymentStatus = PaymentStatus.PENDING;
+        this.paymentStatus = PaymentStatus.APPROVED;
     }
 
     @PreUpdate

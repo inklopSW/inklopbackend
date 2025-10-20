@@ -40,6 +40,7 @@ import java.time.temporal.ChronoUnit;
 public class CampaignService {
 
     private final CampaignRepository campaignRepository;
+    private final CampaignPaymentService campaignPaymentService;
     private final CampaignCategoryRepository campaignCategoryRepository;
     private final CampaignCountryRepository campaignCountryRepository;
     private final CampaignRequirementsRepository campaignRequirementsRepository;
@@ -139,6 +140,15 @@ public class CampaignService {
             LocalDateTime.now(ZoneId.of("America/Lima")) 
         );
 
+        campaignPaymentService.saveCampaignPayment(
+            campaign,
+            campaign.getTotalBudget(),
+            campaign.getCurrency(),
+            campaign.getBusiness().getRUC(),
+            campaign.getBusiness().getBusinessName(),
+            PaymentType.BANK_TRANSFER
+        );
+        
         messagingTemplate.convertAndSend("/topic/newCampaigns/creators", noti);
 
         roomService.createBothRooms(campaign);
