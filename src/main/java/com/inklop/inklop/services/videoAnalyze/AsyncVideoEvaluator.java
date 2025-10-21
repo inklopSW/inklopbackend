@@ -25,7 +25,9 @@ public class AsyncVideoEvaluator {
 
     @Async
     @Transactional
-    public void evaluateSubmissionAsync(Submission submission) {
+    public void evaluateSubmissionAsync(Long id) {
+        Submission submission = submissionRepository.findById(id).orElseThrow();
+
         try {
 
             VideoAnalyzeResponse response = videoAnalyzeService.analyzeVideo(

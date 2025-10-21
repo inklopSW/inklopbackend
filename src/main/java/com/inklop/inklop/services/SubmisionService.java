@@ -160,7 +160,7 @@ public class SubmisionService {
         submission.setSubmissionStatus(SubmissionStatus.PENDING);
         submission=submisionRepository.save(submission);
 
-        asyncVideoEvaluator.evaluateSubmissionAsync(submission);
+        asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
 
         return new ShowFullSubmission(
                 submission.getId(),
