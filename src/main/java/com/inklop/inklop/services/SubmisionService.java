@@ -431,6 +431,7 @@ public class SubmisionService {
 
     public MetricsCreatorResponse getMetricsCreator(Long userId) throws Exception{
         MetricsSimple metricsSimple = getAllSubmissionsCBC(userId,"creator");
+        Wallet wallet = walletRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found for user id " + userId));
         if (metricsSimple.quantity()==0){
             return new MetricsCreatorResponse(
                 0L,
@@ -463,7 +464,6 @@ public class SubmisionService {
             }
         }
 
-
         return new MetricsCreatorResponse(
             metricsSimple.views(),
             metricsSimple.quantity(),
@@ -471,8 +471,8 @@ public class SubmisionService {
             metricsSimple.viewsFb(),
             metricsSimple.viewsTk(),
             metricsSimple.submissions(),
-            walletRepository.findByUserId(userId).get().getUSD(),
-            walletRepository.findByUserId(userId).get().getPEN(),
+            wallet.getUSD(),
+            wallet.getPEN(),
             totalBalance,
             incomes
         );
