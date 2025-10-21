@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import com.inklop.inklop.entities.valueObject.campaign.Currency;
 import com.inklop.inklop.entities.valueObject.campaign.PaymentStatus;
 
-
 public record SubmissionPaymentResponse(
     Long views,
     BigDecimal engagement,
@@ -13,5 +12,4 @@ public record SubmissionPaymentResponse(
     BigDecimal payment,
     BigDecimal paymentReceived,
     Currency currency    
-
 ){}

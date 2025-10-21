@@ -30,11 +30,6 @@ public class SocialMediaService {
     private final SocialMediaRepository socialMediaRepository;
     private final ScrapperService scrapperService;
 
-
-    /**
-     * Construye la entidad a partir del request y user.
-     * Si requiere scrapping y este falla o devuelve null, retorna null para indicar que se debe omitir.
-     */
     public SocialMedia getSocialMediaEntity(SocialMediaRequest socialMedia, User user){
         String url = "";
         String ownerId = "";
@@ -52,7 +47,7 @@ public class SocialMediaService {
                 ProfileResponse profile = scrapperService.getProfile(socialMedia.link(), platform);
                 if (profile == null) {
                     log.warn("getSocialMediaEntity -> Scrapper returned null for url={} platform={} userId={}", socialMedia.link(), platform, user != null ? user.getId() : null);
-                    return null; // omitir si no hay datos
+                    return null;
                 }
                 url = profile.link() != null ? profile.link() : socialMedia.link();
                 ownerId = profile.ownerId() != null ? profile.ownerId() : "";
@@ -60,7 +55,6 @@ public class SocialMediaService {
                 avatar = profile.channel_image() != null ? profile.channel_image() : "";
                 nickname = profile.nickname() != null ? profile.nickname() : "";
             } catch (Exception e) {
-                // No lanzar: solo omitir este social media y seguir con los demás
                 log.warn("getSocialMediaEntity -> Failed to scrap url={} platform={} userId={} error={}", socialMedia.link(), platform, user != null ? user.getId() : null, e.getMessage());
                 return null;
             }
@@ -76,10 +70,6 @@ public class SocialMediaService {
         return socialMediaMapper.toResponse(socialMedia);
     }
 
-    /**
-     * Procesa y guarda los social media. Si el scrapping de una entrada falla o devuelve null,
-     * esa entrada se omite y no provoca rollback del resto.
-     */
     @Transactional
     public List<SocialMediaResponse> addSocialMedias(List<SocialMediaRequest> socialMedias, User user){
         if (socialMedias == null || socialMedias.isEmpty()) {
@@ -94,7 +84,6 @@ public class SocialMediaService {
                 log.info("addSocialMedias -> Skipping social media for link={} platform={} userId={}", req.link(), req.platform(), user != null ? user.getId() : null);
                 continue;
             }
-            // Ensure new row and set owner
             entity.setId(null);
             entity.setUser(user);
             toSave.add(entity);
@@ -109,6 +98,6 @@ public class SocialMediaService {
 
         return saved.stream()
                 .map(socialMediaMapper::toResponse)
-                .toList();
+                .collect(java.util.stream.Collectors.toList());
     }
 }

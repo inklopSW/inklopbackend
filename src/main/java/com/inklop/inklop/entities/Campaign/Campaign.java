@@ -166,4 +166,13 @@ public class Campaign {
         return (int) ChronoUnit.DAYS.between(this.getStartDate(),this.getEndDate());
     }
 
+    public String getMaxDescription(){
+        String desc = this.description;
+        for (CampaignRequirements req : this.campaignRequirements){
+            desc += "\n- " + req.getRequirement();
+        }
+        return desc;
+    }
+
 }
+    

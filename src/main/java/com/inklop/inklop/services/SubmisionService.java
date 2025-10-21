@@ -2,17 +2,18 @@ package com.inklop.inklop.services;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.inklop.inklop.controllers.submission.request.SimpleSubmissionRequest;
-import com.inklop.inklop.controllers.submission.response.SubmissionResponse;
 import com.inklop.inklop.controllers.submission.response.SubmissionPaymentResponse;
 import com.inklop.inklop.controllers.webSocket.response.NotificationResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsBusinessResponse;
@@ -32,6 +33,7 @@ import com.inklop.inklop.entities.valueObject.campaign.Currency;
 import com.inklop.inklop.entities.valueObject.campaign.PaymentStatus;
 import com.inklop.inklop.entities.valueObject.submission.SubmissionStatus;
 import com.inklop.inklop.entities.valueObject.user.Platform;
+import com.inklop.inklop.mappers.ScrapperMapper;
 import com.inklop.inklop.repositories.SocialMediaRepository;
 import com.inklop.inklop.repositories.SubmissionRepository;
 import com.inklop.inklop.repositories.UserRepository;
@@ -41,6 +43,7 @@ import com.inklop.inklop.repositories.Campaign.CampaignRepository;
 import com.inklop.inklop.services.scrapper.ScrapperService;
 import com.inklop.inklop.services.scrapper.dto.PostResponse;
 import com.inklop.inklop.services.scrapper.dto.VideoStatsResponse;
+import com.inklop.inklop.services.videoAnalyze.AsyncVideoEvaluator;
 import com.inklop.inklop.entities.valueObject.Status;
 
 import lombok.RequiredArgsConstructor;
@@ -56,11 +59,12 @@ public class SubmisionService {
     private final CampaignService campaignService;
     private final SubmissionPaymentRepository submissionPaymentRepository;
     private final WalletRepository walletRepository;
-    private final SimpMessagingTemplate messagingTemplate;
     private final SocialMediaRepository socialMediaRepository;
     private final ScrapperService scrapperService;
+    private final ScrapperMapper scrapperMapper;
+    private final AsyncVideoEvaluator asyncVideoEvaluator;
 
-    public SubmissionResponse saveSubmission(SimpleSubmissionRequest submissionRequest){
+    public ShowFullSubmission saveSubmission(SimpleSubmissionRequest submissionRequest){
         Campaign campaign=campaignRepository.findById(submissionRequest.idCampaign()).get();
         if(!campaign.getCampaignStatus().equals(CampaignStatus.IN_PROGRESS)){
             throw new RuntimeException("Campaign is not in progress");
@@ -74,135 +78,86 @@ public class SubmisionService {
             throw new RuntimeException("Social media is inactive");
         }
 
+        IncomeDto incomeDto= new IncomeDto(BigDecimal.ZERO, campaign.getCurrency(), campaign.getName(), campaign.getLogo());
         PostResponse videoInfo = scrapperService.postVideoToExternalApi(submissionRequest.videoUrl(), socialMedia.getPlatform(), campaign.getEndDate());
         
         Submission submission = new Submission();
         submission.setCampaign(campaign);
         submission.setSocialMedia(socialMedia);
         submission.setVideoUrl(videoInfo.video_url());
-        //aca esta lo que es un porcentaje falso ahora los videos seran de prueba 
-        submission.setPercentage(71);
+
+        // Verificar si el video ya fue enviado anteriormente
+        if (submisionRepository.existsBySavedVideoUrl(videoInfo.video_url())) {
+            submission.setDescription("Video has already been submitted");
+            submission.setSubmissionStatus(SubmissionStatus.REJECTED);
+            submission.setPercentage(0);
+            submission = submisionRepository.save(submission);
+            return new ShowFullSubmission(
+                submission.getId(),
+                submission.getSubmissionStatus(),
+                PaymentStatus.REJECTED,
+                submission.getSubmittedAt(),
+                submission.getDescription(),
+                incomeDto,
+                scrapperMapper.toVideoStatsResponse(videoInfo)
+            );
+
+        }
 
         if ( !videoInfo.owner_id().equals(socialMedia.getOwnerId())){
-            submission.setDescription("video no aprobado x que no coincide con el id");
+            submission.setDescription("Video does not belong to the user");
             submission.setSubmissionStatus(SubmissionStatus.REJECTED);
-            submisionRepository.save(submission);
-
-
-            return new SubmissionResponse(
+            submission.setPercentage(0);
+            submission = submisionRepository.save(submission);
+            return new ShowFullSubmission(
                 submission.getId(),
-                submission.getVideoUrl(),
                 submission.getSubmissionStatus(),
-                submission.getPercentage(),
-                submission.getDescription()
+                PaymentStatus.REJECTED,
+                submission.getSubmittedAt(),
+                submission.getDescription(),
+                incomeDto,
+                scrapperMapper.toVideoStatsResponse(videoInfo)
+            );
+        }
+
+        Instant utcIns = Instant.parse(videoInfo.timestamp());
+        LocalDateTime videoTimestamp = LocalDateTime.ofInstant(utcIns, ZoneId.of("America/Lima"));
+
+        // video debe ser subido luego de la fecha de inicio de la campaña
+        if (videoTimestamp.toLocalDate().isBefore(campaign.getStartDate())) {
+            submission.setDescription("Video submitted before campaign start date");
+            submission.setSubmissionStatus(SubmissionStatus.REJECTED);
+            submission.setPercentage(0);
+            submission = submisionRepository.save(submission);
+            return new ShowFullSubmission(
+                submission.getId(),
+                submission.getSubmissionStatus(),
+                PaymentStatus.REJECTED,
+                submission.getSubmittedAt(),
+                submission.getDescription(),
+                incomeDto,
+                scrapperMapper.toVideoStatsResponse(videoInfo)
             );
         }
         
-        if (submission.getPercentage()>69){
-            NotificationResponse noti = new NotificationResponse(
-            campaign.getLogo(),
-            "Tu publicacion ha sido aprobada",
-            "La publicacion de tu video a sido aprobado en la campaña" + campaign.getName(),
-            LocalDateTime.now(ZoneId.of("America/Lima")) 
-        );
-            submission.setDescription("Si cumple con los lineamientos");
-            submission.setSubmissionStatus(SubmissionStatus.APPROVED);
-            submission.setSavedVideoUrl(videoInfo.video_url());
-            messagingTemplate.convertAndSend("/topic/newSubmission"+submission.getSocialMedia().getUser().getId(), noti);
-            
-        } else {
-            NotificationResponse noti = new NotificationResponse(
-            campaign.getLogo(),
-            "Tu publicacion ha sido rechazada",
-            "La publicacion de tu video a sido rechazada en la campaña" + campaign.getName(),
-            LocalDateTime.now(ZoneId.of("America/Lima")) 
-        );
-            submission.setDescription("No cumple con los lineamientos");
-            submission.setSubmissionStatus(SubmissionStatus.REJECTED);
-            messagingTemplate.convertAndSend("/topic/newSubmission"+submission.getSocialMedia().getUser().getId(), noti);
-        }
+        submission.setDescription("Submission pending review");
+        submission.setSubmissionStatus(SubmissionStatus.PENDING);
+        submission=submisionRepository.save(submission);
 
-        submisionRepository.save(submission);
+        asyncVideoEvaluator.evaluateSubmissionAsync(submission);
 
-        return new SubmissionResponse(
+        return new ShowFullSubmission(
                 submission.getId(),
-                submission.getVideoUrl(),
                 submission.getSubmissionStatus(),
-                submission.getPercentage(),
-                submission.getDescription()
-        );
+                PaymentStatus.PENDING,
+                submission.getSubmittedAt(),               
+                submission.getDescription(),
+                incomeDto,
+                scrapperMapper.toVideoStatsResponse(videoInfo)
+            );
 
     }
 
-    /* 
-    public List<ShowFullSubmission> getAllSubmissionsByCreatorId(Long creatorId) throws Exception {
-        
-        List<Submission> submissions = submisionRepository.findBySocialMediaUserId(creatorId);
-
-        // 1. Separar URLs que necesitan scraping
-        List<String> urlsToScrape = submissions.stream()
-                .filter(s -> s.getSubmissionPayment() == null)
-                .map(Submission::getVideoUrl)
-                .collect(Collectors.toList());
-
-        // 2. Scraping de los que no tienen SubmissionPayment
-        List<ApifyResponse> apifyResponses = apifyService.scrapeUrlsByPlatform(urlsToScrape);
-
-        Map<String, ApifyResponse> apifyResponseMap = apifyResponses.stream()
-                .collect(Collectors.toMap(ApifyResponse::getVideoUrl, Function.identity()));
-
-        // 3. Crear ShowFullSubmission para todos
-        List<ShowFullSubmission> fullSubmissions = submissions.stream()
-                .map(submission -> {
-                    if (submission.getSubmissionPayment() != null) {
-                        // Ya tiene SubmissionPayment
-                        return new ShowFullSubmission(
-                                submission.getId(),
-                                submission.getSubmissionStatus(),
-                                submission.getSubmittedAt(),
-                                new IncomeDto(
-                                    BigDecimal.ZERO,
-                                    submission.getCampaign().getCurrency()
-                                ),
-                                new ApifyResponse(
-                                        submission.getId().toString(),
-                                        submission.getPlatform().name(),
-                                        submission.getSubmissionPayment().getTimestamp(),
-                                        submission.getSubmissionPayment().getCaption(),
-                                        submission.getSubmissionPayment().getLikes(),
-                                        submission.getSubmissionPayment().getViews(),
-                                        submission.getSubmissionPayment().getComments(),
-                                        submission.getSubmissionPayment().getShareCount(),
-                                        submission.getSavedVideoUrl(),
-                                        submission.getSubmissionPayment().getDisplayUrl(),
-                                        new AuthorMeta(
-                                                submission.getSubmissionPayment().getAvatar(),
-                                                submission.getSubmissionPayment().getName(),
-                                                submission.getSubmissionPayment().getNickName(),
-                                                submission.getSubmissionPayment().getProfileUrl()
-                                        )
-                                )
-                        );
-                    } else {
-                        // Usar scraping si existe
-                        ApifyResponse scraped = apifyResponseMap.get(submission.getVideoUrl());
-                        return new ShowFullSubmission(
-                                submission.getId(),
-                                (scraped != null) ? SubmissionStatus.APPROVED : SubmissionStatus.PENDING,
-                                submission.getSubmittedAt(),
-                                new IncomeDto(
-                                    BigDecimal.ZERO,
-                                    submission.getCampaign().getCurrency()
-                                ),
-                                scraped
-                        );
-                    }
-                })
-                .sorted(Comparator.comparing(ShowFullSubmission::submittedAt).reversed()) // Orden descendente por fecha
-                .collect(Collectors.toList());
-
-        return fullSubmissions;
-    }*/
 
     private MetricsSimple getAllSubmissionsCBC(Long id, String type)throws Exception{
         List<Submission> submissions = new ArrayList<>();
@@ -232,16 +187,28 @@ public class SubmisionService {
             BigDecimal payment= new BigDecimal(0);
 
             VideoStatsResponse postResponse= postsByUrl.get(submission.getVideoUrl());
-            // VALIDACION SI NO EXISTE LINK
-            payment=submission.getCampaign().getCpm().multiply(new BigDecimal(postResponse.views()).divide(new BigDecimal(1000)));
+            if (postResponse == null) {
+                log.warn("getAllSubmissionsCBC -> No stats for url={} skipping or using defaults", submission.getVideoUrl());
+                continue; // o usar valores por defecto
+            }
+            // calcular payment de forma segura
+            BigDecimal viewsBd = BigDecimal.valueOf(postResponse.views());
+            payment=submission.getCampaign().getCpm().multiply(viewsBd.divide(BigDecimal.valueOf(1000), 6, RoundingMode.HALF_UP));
             payment=campaignService.getMaxPaymentAndBudget(submission.getCampaign(), payment);
             
             if (submission.getSubmissionStatus().equals(SubmissionStatus.REJECTED)){
                 payment=new BigDecimal(0);
             }
 
+            PaymentStatus paymentStatus= PaymentStatus.PENDING;
+
+            if (submission.getSubmissionStatus().equals(SubmissionStatus.REJECTED)){
+                paymentStatus= PaymentStatus.REJECTED;
+            }
+
             if (submission.getSubmissionPayment() != null) {
                 payment=submission.getSubmissionPayment().getPaymentReceived();
+                paymentStatus=submission.getSubmissionPayment().getPaymentStatus();
             }
 
             if (submission.getSubmissionStatus().equals(SubmissionStatus.APPROVED) || submission.getSubmissionStatus().equals(SubmissionStatus.PAYED)){
@@ -258,11 +225,14 @@ public class SubmisionService {
             shareCount+= postResponse.shares();
             quantity+=1;
             }
+            
 
             showFullSubmissions.add(new ShowFullSubmission(
                 submission.getId(),
                 submission.getSubmissionStatus(),
+                paymentStatus,
                 submission.getSubmittedAt(),
+                submission.getDescription(),
                 new IncomeDto(
                     payment,
                     submission.getCampaign().getCurrency(),
@@ -362,7 +332,7 @@ public class SubmisionService {
         Submission submission = submisionRepository.findById(id).orElseThrow(() -> new RuntimeException("Submission no encontrada con id " + id));
         
         if (submission.getSubmissionStatus().equals(SubmissionStatus.PENDING) || submission.getSubmissionStatus().equals(SubmissionStatus.REJECTED)){
-            throw new RuntimeException("Submisssion no aprobada");
+            throw new RuntimeException("Submission aun no ha sido procesada");
         }
 
         if (submission.getSubmissionPayment() != null) {
@@ -400,8 +370,7 @@ public class SubmisionService {
         submissionPayment.setEngagement(engagement);
 
         
-        if (engagement.compareTo(BigDecimal.valueOf(2)) > 0){
-            
+        if (engagement.compareTo(BigDecimal.valueOf(2)) > 0){            
             submissionPayment.setPaymentStatus(PaymentStatus.APPROVED);
             BigDecimal payment=campaign.getCpm().multiply(new BigDecimal(submissionPayment.getViews()).divide(new BigDecimal(1000)));
             BigDecimal finalPayment = campaignService.getMaxPaymentAndBudget(campaign, payment);
@@ -424,6 +393,7 @@ public class SubmisionService {
             
         } else {
             submission.setSubmissionStatus(SubmissionStatus.ERROR);
+            submission.setDescription("Video rejected due to low engagement rate: " + engagement + "%");
             submissionPayment.setPaymentStatus(PaymentStatus.REJECTED);
             submissionPayment.setPayment(BigDecimal.ZERO);
             submissionPayment.setPaymentReceived(BigDecimal.ZERO);

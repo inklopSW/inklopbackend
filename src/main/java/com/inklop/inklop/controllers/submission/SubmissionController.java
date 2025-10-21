@@ -6,11 +6,11 @@ import org.springframework.http.ResponseEntity;
 
 import com.inklop.inklop.controllers.submission.request.SimpleSubmissionRequest;
 
-import com.inklop.inklop.controllers.submission.response.SubmissionResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsBusinessResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsCampaignResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsCreatorResponse;
 import com.inklop.inklop.controllers.submission.response.SubmissionPaymentResponse;
+import com.inklop.inklop.controllers.submission.response.ShowFullSubmission;
 
 import com.inklop.inklop.services.SubmisionService;
 
@@ -19,10 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-
-
-
 
 
 @RestController
@@ -35,7 +31,7 @@ public class SubmissionController {
     }
 
     @PostMapping
-    public ResponseEntity<SubmissionResponse> createSubmission(@RequestBody SimpleSubmissionRequest submission){
+    public ResponseEntity<ShowFullSubmission> createSubmission(@RequestBody SimpleSubmissionRequest submission){
         return ResponseEntity.ok(submisionService.saveSubmission(submission));
     }
     

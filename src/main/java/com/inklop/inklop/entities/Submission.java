@@ -6,7 +6,6 @@ import com.inklop.inklop.entities.valueObject.submission.SubmissionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
-import org.hibernate.validator.constraints.URL;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -37,7 +36,6 @@ public class Submission {
     @JoinColumn(name = "social_media_id", nullable = false, referencedColumnName="id")
     private SocialMedia socialMedia;
 
-    @URL
     @Column(name = "video_url", nullable = false)
     private String videoUrl;
 

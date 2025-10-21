@@ -141,13 +141,18 @@ public class ScrapperService {
                 requestEntity,
                 ProfileResponse.class);
 
-            return response.getBody();
+            ProfileResponse body = response.getBody();
+            if (body == null) {
+                log.warn("getProfile -> Empty response body from scrapper for url={} platform={}", videoUrl, platform);
+                return null;
+            }
+            return body;
         } catch (HttpClientErrorException e) {
             log.error("getProfile -> Http error calling scrapper service: {} - responseBody: {}", e.getMessage(), e.getResponseBodyAsString(), e);
-            throw e;
+            return null;
         } catch (Exception e) {
             log.error("getProfile -> Unexpected error calling scrapper service: {}", e.getMessage(), e);
-            throw new RuntimeException("Unexpected error calling scrapper service", e);
+            return null;
         }
     }
 

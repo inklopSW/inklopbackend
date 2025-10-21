@@ -17,7 +17,7 @@ public class CampaignScheduler {
     }
 
     // Se ejecuta todos los días a las 23:59
-    @Scheduled(cron = "0 59 23 * * ?")
+    @Scheduled(cron = "0 59 23 * * ?", zone = "America/Lima")
     public void updateCampaignsDaily() {
         campaignService.updateCampaignStatusesToday();
         System.out.println("Campaign statuses updated at " + LocalDateTime.now());

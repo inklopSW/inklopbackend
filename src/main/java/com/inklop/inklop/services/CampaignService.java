@@ -56,7 +56,7 @@ public class CampaignService {
     }
 
     public void updateCampaignStatusesToday() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("America/Lima"));
         List<Campaign> campaigns = campaignRepository.findByStatusAndDateBeforeOrEqual(
             List.of(CampaignStatus.IN_COMING, CampaignStatus.IN_PROGRESS),today);
         List<Campaign> updatedCampaigns = new ArrayList<>();

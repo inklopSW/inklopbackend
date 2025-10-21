@@ -24,6 +24,7 @@ springdoc:
 external:
   video:
     api-url: ${EXTERNAL_VIDEO_API_URL}
+    analyze-url: ${EXTERNAL_VIDEO_ANALYZE_URL}
 
 auth0:
   domain: ${AUTH0_DOMAIN}

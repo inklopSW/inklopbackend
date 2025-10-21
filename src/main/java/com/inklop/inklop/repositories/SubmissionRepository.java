@@ -16,4 +16,5 @@ public interface SubmissionRepository extends JpaRepository<Submission,Long>{
     List<Submission> findByCampaignBusinessId(Long businessId);
     List<Submission> findByCampaignId(Long campaignId);
     List<Submission> findBySocialMediaUserId(Long userId);
+    boolean existsBySavedVideoUrl(String savedVideoUrl);
 }
