@@ -139,6 +139,7 @@ public class SubmisionService {
         
         
         // video debe ser subido luego de la fecha de inicio de la campaña
+        /* 
         if (videoTimestamp.toLocalDate().isBefore(campaign.getStartDate())) {
             submission.setDescription("Video submitted before campaign start date");
             submission.setSubmissionStatus(SubmissionStatus.REJECTED);
@@ -154,7 +155,7 @@ public class SubmisionService {
                 scrapperMapper.toVideoStatsResponse(videoInfo)
             );
         }
-        
+        */
         submission.setDescription("Submission pending review");
         submission.setSubmissionStatus(SubmissionStatus.PENDING);
         submission=submisionRepository.save(submission);
@@ -293,7 +294,7 @@ public class SubmisionService {
         );
 
     }
-    //falta implementar aca
+
     public MetricsCampaignResponse getMetricsByCampaignId (Long campaignId){
         MetricsSimple metricsSimple = getAllSubmissionsCBC(campaignId,"campaign");
         Campaign campaign = campaignRepository.findById(campaignId).get();

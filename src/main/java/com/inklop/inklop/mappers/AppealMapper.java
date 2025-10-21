@@ -6,7 +6,7 @@ import com.inklop.inklop.services.scrapper.dto.VideoStatsResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface AppealMapper {
     @Mapping(target = "videoStats", source = "videoStatsResponse")
     AppealResponse toAppealResponse(Appeal appeal, VideoStatsResponse videoStatsResponse);
