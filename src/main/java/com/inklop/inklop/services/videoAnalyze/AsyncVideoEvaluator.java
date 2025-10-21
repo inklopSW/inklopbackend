@@ -35,7 +35,7 @@ public class AsyncVideoEvaluator {
                 submission.getCampaign().getMaxDescription()
             );
 
-            Integer percentage = response.alignment().match_percentage().intValue();
+            Integer percentage = response.alignment().match_percent().intValue();
 
             submission.setPercentage(percentage);
 

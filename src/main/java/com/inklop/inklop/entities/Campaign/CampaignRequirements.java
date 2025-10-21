@@ -21,6 +21,7 @@ public class CampaignRequirements {
     @JoinColumn(name = "id_campaign", referencedColumnName = "id", nullable = false)
     private Campaign campaign;
 
+    @Column( length = 4000)
     private String requirement;
     
 }

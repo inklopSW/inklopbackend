@@ -8,14 +8,10 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.inklop.inklop.controllers.submission.request.SimpleSubmissionRequest;
 import com.inklop.inklop.controllers.submission.response.SubmissionPaymentResponse;
-import com.inklop.inklop.controllers.webSocket.response.NotificationResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsBusinessResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsCampaignResponse;
 import com.inklop.inklop.controllers.submission.response.metrics.MetricsCreatorResponse;
@@ -78,6 +74,24 @@ public class SubmisionService {
             throw new RuntimeException("Social media is inactive");
         }
 
+        if (!campaign.getHasFacebook()){
+            if (socialMedia.getPlatform().equals(Platform.FACEBOOK)){
+                throw new RuntimeException("Campaign does not accept Facebook submissions");
+            }
+        }
+
+        if (!campaign.getHasInstagram()){
+            if (socialMedia.getPlatform().equals(Platform.INSTAGRAM)){
+                throw new RuntimeException("Campaign does not accept Instagram submissions");
+            }
+        }
+        
+        if (!campaign.getHasTiktok()){
+            if (socialMedia.getPlatform().equals(Platform.TIKTOK)){
+                throw new RuntimeException("Campaign does not accept TikTok submissions");
+            }
+        }       
+
         IncomeDto incomeDto= new IncomeDto(BigDecimal.ZERO, campaign.getCurrency(), campaign.getName(), campaign.getLogo());
         PostResponse videoInfo = scrapperService.postVideoToExternalApi(submissionRequest.videoUrl(), socialMedia.getPlatform(), campaign.getEndDate());
         
@@ -104,6 +118,7 @@ public class SubmisionService {
 
         }
 
+        /* 
         if ( !videoInfo.owner_id().equals(socialMedia.getOwnerId())){
             submission.setDescription("Video does not belong to the user");
             submission.setSubmissionStatus(SubmissionStatus.REJECTED);
@@ -118,11 +133,12 @@ public class SubmisionService {
                 incomeDto,
                 scrapperMapper.toVideoStatsResponse(videoInfo)
             );
-        }
+        }*/
 
         Instant utcIns = Instant.parse(videoInfo.timestamp());
         LocalDateTime videoTimestamp = LocalDateTime.ofInstant(utcIns, ZoneId.of("America/Lima"));
-
+        
+        /* 
         // video debe ser subido luego de la fecha de inicio de la campaña
         if (videoTimestamp.toLocalDate().isBefore(campaign.getStartDate())) {
             submission.setDescription("Video submitted before campaign start date");
@@ -138,7 +154,7 @@ public class SubmisionService {
                 incomeDto,
                 scrapperMapper.toVideoStatsResponse(videoInfo)
             );
-        }
+        }*/
         
         submission.setDescription("Submission pending review");
         submission.setSubmissionStatus(SubmissionStatus.PENDING);

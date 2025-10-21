@@ -57,13 +57,13 @@ public class CreatorService {
 
         creatorCategoriesRepository.saveAll(creatorCategories);
 
-        userRepository.flush(); // Asegura que el usuario se guarde antes de continuar
-
-        List<SocialMediaResponse> socialMedias = socialMediaService.addSocialMedias(request.socialMedias(), user);
-
+        userRepository.flush();
+        
         Wallet wallet = new Wallet();
         wallet.setUser(user);
         walletRepository.save(wallet);
+
+        List<SocialMediaResponse> socialMedias = socialMediaService.addSocialMedias(request.socialMedias(), user);
 
         return userMapper.toLoginResponse(user, wallet, socialMedias, request.username());
     }

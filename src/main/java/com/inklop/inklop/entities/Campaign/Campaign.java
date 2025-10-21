@@ -47,6 +47,7 @@ public class Campaign {
     @Column(name="logo")
     private String logo;
 
+    @Column(name = "description", length = 4000)
     private String description;
 
     @Column(name = "start_date", nullable = false)

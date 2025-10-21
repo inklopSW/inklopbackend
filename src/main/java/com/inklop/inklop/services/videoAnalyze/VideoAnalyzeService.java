@@ -21,8 +21,10 @@ public class VideoAnalyzeService {
     public VideoAnalyzeResponse analyzeVideo(Long campaignId, String videoUrl, LocalDate endDate, String description){
         String apiUrl = extraConfig.getVideoAnalyzeUrl() + "/api/evaluate";
 
+        System.out.println("Description: " + description);
+
         Map<String, Object> requestBody = Map.of(
-            "campaign_id", campaignId,
+            "campaign_id", String.valueOf(campaignId),
             "descripcion", description,
             "video_url", videoUrl,
             "end_date", endDate.toString()
@@ -35,6 +37,8 @@ public class VideoAnalyzeService {
 
         ResponseEntity<VideoAnalyzeResponse> response = restTemplate.postForEntity(apiUrl, requestEntity, VideoAnalyzeResponse.class);
 
+        System.out.println("Video Analyze Response Status: " + response.getBody().alignment().match_percent());
         return response.getBody();
+        
     }
 }
