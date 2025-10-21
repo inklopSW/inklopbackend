@@ -380,6 +380,7 @@ public class SubmisionService {
 
         submissionPayment.setSubmission(submission);
         submissionPayment.setShareCount(videoStatsResponse.shares());
+        submissionPayment.setBookmarks(videoStatsResponse.bookmarks());
         submissionPayment.setComments(videoStatsResponse.comments());
         submissionPayment.setLikes(videoStatsResponse.likes());
         submissionPayment.setViews(videoStatsResponse.views());
