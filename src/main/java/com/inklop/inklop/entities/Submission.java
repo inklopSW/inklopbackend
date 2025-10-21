@@ -64,4 +64,16 @@ public class Submission {
         if (uuid == null) uuid = UUID.randomUUID();
         
     }
+
+    public Boolean isApproved(){
+        return this.submissionStatus == SubmissionStatus.APPROVED || this.submissionStatus == SubmissionStatus.FINAL_APPROVED;
+    }
+
+    public Boolean isRejected(){
+        return this.submissionStatus == SubmissionStatus.REJECTED || this.submissionStatus == SubmissionStatus.FINAL_REJECTED;
+    }
+
+    public Boolean isFinalStatus(){
+        return this.submissionStatus == SubmissionStatus.FINAL_APPROVED || this.submissionStatus == SubmissionStatus.FINAL_REJECTED;
+    }
 }

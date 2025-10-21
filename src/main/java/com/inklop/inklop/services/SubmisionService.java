@@ -117,8 +117,7 @@ public class SubmisionService {
             );
 
         }
-
-        /* 
+        
         if ( !videoInfo.owner_id().equals(socialMedia.getOwnerId())){
             submission.setDescription("Video does not belong to the user");
             submission.setSubmissionStatus(SubmissionStatus.REJECTED);
@@ -133,12 +132,12 @@ public class SubmisionService {
                 incomeDto,
                 scrapperMapper.toVideoStatsResponse(videoInfo)
             );
-        }*/
+        }
 
         Instant utcIns = Instant.parse(videoInfo.timestamp());
         LocalDateTime videoTimestamp = LocalDateTime.ofInstant(utcIns, ZoneId.of("America/Lima"));
         
-        /* 
+        
         // video debe ser subido luego de la fecha de inicio de la campaña
         if (videoTimestamp.toLocalDate().isBefore(campaign.getStartDate())) {
             submission.setDescription("Video submitted before campaign start date");
@@ -154,12 +153,11 @@ public class SubmisionService {
                 incomeDto,
                 scrapperMapper.toVideoStatsResponse(videoInfo)
             );
-        }*/
+        }
         
         submission.setDescription("Submission pending review");
         submission.setSubmissionStatus(SubmissionStatus.PENDING);
         submission=submisionRepository.save(submission);
-
         asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
 
         return new ShowFullSubmission(
@@ -174,8 +172,31 @@ public class SubmisionService {
 
     }
 
+    public ShowFullSubmission sendToApproveAgain(Long id){
+        Submission submission = submisionRepository.findById(id).get();
 
-    private MetricsSimple getAllSubmissionsCBC(Long id, String type)throws Exception{
+        // only submissions in PENDING status can be sent for re-evaluation
+        if (!submission.getSubmissionStatus().equals(SubmissionStatus.PENDING)){
+            throw new RuntimeException("Submission is not in pending status");
+        }
+
+        asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
+        IncomeDto incomeDto= new IncomeDto(BigDecimal.ZERO, submission.getCampaign().getCurrency(), submission.getCampaign().getName(), submission.getCampaign().getLogo());
+        return new ShowFullSubmission(
+            submission.getId(),
+            submission.getSubmissionStatus(),
+            PaymentStatus.PENDING,
+            submission.getSubmittedAt(),
+            submission.getDescription(),
+            incomeDto,
+            null
+        );
+
+    
+    }
+
+
+    private MetricsSimple getAllSubmissionsCBC(Long id, String type){
         List<Submission> submissions = new ArrayList<>();
         Long views=0L;
         Long likes=0L;
@@ -273,7 +294,7 @@ public class SubmisionService {
 
     }
     //falta implementar aca
-    public MetricsCampaignResponse getMetricsByCampaignId (Long campaignId) throws Exception{
+    public MetricsCampaignResponse getMetricsByCampaignId (Long campaignId){
         MetricsSimple metricsSimple = getAllSubmissionsCBC(campaignId,"campaign");
         Campaign campaign = campaignRepository.findById(campaignId).get();
         return new MetricsCampaignResponse(
@@ -297,7 +318,7 @@ public class SubmisionService {
         );
     }
 
-    public MetricsBusinessResponse getMetricsBussiness(Long userId) throws Exception{
+    public MetricsBusinessResponse getMetricsBussiness(Long userId){
         Long bussinessId= userRepository.findById(userId).get().getBusiness().getId();
         List<Campaign> campaigns = campaignRepository.findByBusinessId(bussinessId);
         if (campaigns.isEmpty()){
@@ -344,11 +365,11 @@ public class SubmisionService {
             .setScale(2, RoundingMode.HALF_UP);
     }
 
-    public SubmissionPaymentResponse getPayment(Long id) throws Exception{
+    public SubmissionPaymentResponse getPayment(Long id){
         Submission submission = submisionRepository.findById(id).orElseThrow(() -> new RuntimeException("Submission no encontrada con id " + id));
         
-        if (submission.getSubmissionStatus().equals(SubmissionStatus.PENDING) || submission.getSubmissionStatus().equals(SubmissionStatus.REJECTED)){
-            throw new RuntimeException("Submission aun no ha sido procesada");
+        if (!submission.isApproved()){
+            throw new RuntimeException("Submission no aprobada, no se puede calcular el pago");
         }
 
         if (submission.getSubmissionPayment() != null) {
@@ -430,7 +451,7 @@ public class SubmisionService {
         );
     }
 
-    public MetricsCreatorResponse getMetricsCreator(Long userId) throws Exception{
+    public MetricsCreatorResponse getMetricsCreator(Long userId){
         MetricsSimple metricsSimple = getAllSubmissionsCBC(userId,"creator");
         Wallet wallet = walletRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found for user id " + userId));
         if (metricsSimple.quantity()==0){

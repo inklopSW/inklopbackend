@@ -33,7 +33,6 @@ public class User {
     @Column(name = "password")
     private String password;
 
-
     @Column(name = "avatar_url")
     private String avatarUrl;
 
@@ -75,7 +74,6 @@ public class User {
     private LocalDateTime updatedAt;
 
     //relations
-
     @OneToOne(mappedBy = "user")
     private Business business;
 

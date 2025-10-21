@@ -34,6 +34,11 @@ public class SubmissionController {
     public ResponseEntity<ShowFullSubmission> createSubmission(@RequestBody SimpleSubmissionRequest submission){
         return ResponseEntity.ok(submisionService.saveSubmission(submission));
     }
+
+    @GetMapping("/review/again/{submissionId}")
+    public ResponseEntity<ShowFullSubmission> paySubmissionAgain(@PathVariable Long submissionId){
+        return ResponseEntity.ok(submisionService.sendToApproveAgain(submissionId));
+    }
     
     /* 
     @GetMapping("/creator/{creatorId}")
@@ -43,25 +48,30 @@ public class SubmissionController {
 
     
     @GetMapping("/metrics/campaign/{campaignId}")
-    public ResponseEntity<MetricsCampaignResponse> getMetricsByCampaignId(@PathVariable Long campaignId) throws Exception {
+    public ResponseEntity<MetricsCampaignResponse> getMetricsByCampaignId(@PathVariable Long campaignId) {
         return ResponseEntity.ok(submisionService.getMetricsByCampaignId(campaignId));
     }
 
     @GetMapping("/metrics/bussiness/{bussinessId}")
-    public ResponseEntity<MetricsBusinessResponse> getBussienssMetrics(@PathVariable Long bussinessId) throws Exception{
+    public ResponseEntity<MetricsBusinessResponse> getBussienssMetrics(@PathVariable Long bussinessId){
         return ResponseEntity.ok(submisionService.getMetricsBussiness(bussinessId));
     }
 
     @GetMapping("/metrics/creator/{creatorId}")
-    public ResponseEntity<MetricsCreatorResponse> getCreatorMetrics(@PathVariable Long creatorId) throws Exception{
+    public ResponseEntity<MetricsCreatorResponse> getCreatorMetrics(@PathVariable Long creatorId){
         return ResponseEntity.ok(submisionService.getMetricsCreator(creatorId));
     } 
     
 
     @GetMapping("/payment/{submissionId}")
-    public ResponseEntity<SubmissionPaymentResponse> getPayment(@PathVariable Long submissionId) throws Exception{
+    public ResponseEntity<SubmissionPaymentResponse> getPayment(@PathVariable Long submissionId){
         return ResponseEntity.ok(submisionService.getPayment(submissionId));
     }
+
+
+    
+
+    
     
 
 }
