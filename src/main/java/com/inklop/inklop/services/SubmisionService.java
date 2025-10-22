@@ -213,7 +213,7 @@ public class SubmisionService {
         } else if(type.equals("campaign")){
             submissions = submisionRepository.findByCampaignId(id);
         } else {
-            submissions = submisionRepository.findByCampaignBusinessId(id);
+            submissions = submisionRepository.findByCampaignBusinessUserId(id);
         }
         List<ShowFullSubmission> showFullSubmissions = new ArrayList<>();
         List<String> urls= submissions.stream().map(Submission::getVideoUrl).toList();

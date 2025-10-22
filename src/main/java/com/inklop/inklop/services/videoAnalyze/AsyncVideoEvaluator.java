@@ -43,11 +43,11 @@ public class AsyncVideoEvaluator {
 
             if (percentage > 39) {
                 submission.setSubmissionStatus(SubmissionStatus.APPROVED);
-                submission.setDescription("Si cumple con los lineamientos");
+                submission.setDescription(response.alignment().reasons());
                 submission.setSavedVideoUrl(submission.getVideoUrl());
             } else {
                 submission.setSubmissionStatus(SubmissionStatus.REJECTED);
-                submission.setDescription("No cumple con los lineamientos + Razones: " + response.alignment().reasons());
+                submission.setDescription(response.alignment().reasons());
             }
 
             submissionRepository.save(submission);

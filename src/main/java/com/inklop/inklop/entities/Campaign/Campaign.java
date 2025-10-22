@@ -60,7 +60,7 @@ public class Campaign {
     @Column(name="type_text")
     private TypeText typeText;
 
-    @Column(name = "text_influencer")
+    @Column(name = "text_influencer", length = 4000)
     private String textInfluencer; // link de drive
 
     @Enumerated(EnumType.STRING)
