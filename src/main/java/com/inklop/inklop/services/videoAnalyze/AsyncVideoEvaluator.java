@@ -38,10 +38,11 @@ public class AsyncVideoEvaluator {
             );
 
             Integer percentage = response.alignment().match_percent().intValue();
+            System.out.println("Percentage: " + response.alignment().match_percent());
 
             submission.setPercentage(percentage);
 
-            if (percentage > 39) {
+            if (response.alignment().aproved()) {
                 submission.setSubmissionStatus(SubmissionStatus.APPROVED);
                 submission.setDescription(response.alignment().reasons());
                 submission.setSavedVideoUrl(submission.getVideoUrl());

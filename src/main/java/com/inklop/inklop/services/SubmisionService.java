@@ -215,6 +215,7 @@ public class SubmisionService {
         } else {
             submissions = submisionRepository.findByCampaignBusinessUserId(id);
         }
+        
         List<ShowFullSubmission> showFullSubmissions = new ArrayList<>();
         List<String> urls= submissions.stream().map(Submission::getVideoUrl).toList();
         
