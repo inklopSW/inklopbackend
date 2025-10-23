@@ -196,7 +196,7 @@ public class SubmisionService {
     
     }
 
-    private MetricsSimple getMetricsAndMappingSubmissions(List<Submission> submissions){
+    public MetricsSimple getMetricsAndMappingSubmissions(List<Submission> submissions){
         Long views=0L;
         Long likes=0L;
         Long comments=0L;
@@ -344,7 +344,7 @@ public class SubmisionService {
 
         MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(submissions); // is better to use jpql with joins but idk uwu
 
-        if (metricsSimple.quantity()==0){
+        if (metricsSimple.submissions().isEmpty()){
             return new MetricsBusinessResponse(
                 bussinessId,
                 totalBudget,
@@ -460,10 +460,11 @@ public class SubmisionService {
     }
 
     public MetricsCreatorResponse getMetricsCreator(Long userId){
-        
-        MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(submisionRepository.findAllBySocialMediaUserId(userId));
+        MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(
+            submisionRepository.findAllBySocialMediaUserId(userId
+            ));
         Wallet wallet = walletRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found for user id " + userId));
-        if (metricsSimple.quantity()==0){
+        if (metricsSimple.submissions().isEmpty()){
             return new MetricsCreatorResponse(
                 0L,
                 0,
