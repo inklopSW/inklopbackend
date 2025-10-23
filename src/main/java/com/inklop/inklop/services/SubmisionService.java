@@ -207,16 +207,16 @@ public class SubmisionService {
         Long viewsIg=0L;
         List<ShowFullSubmission> showFullSubmissions = new ArrayList<>();
         List<String> urls= submissions.stream().map(Submission::getVideoUrl).toList();
-        System.out.println("URLs to fetch stats: " + urls);
+        log.warn("URLs to fetch stats: {}", urls);
 
         Map<String, VideoStatsResponse> postsByUrl = scrapperService.getAllPosts(urls);
-        System.out.println("Fetched video stats for URLs: " + postsByUrl.keySet());
+        log.warn("Fetched video stats for URLs: {}", postsByUrl.keySet());
 
 
         for (Submission submission : submissions) {
             BigDecimal payment= BigDecimal.ZERO;
             VideoStatsResponse postResponse= postsByUrl.get(submission.getVideoUrl());
-            System.out.println("Processing submission ID " + submission.getId() + " with video URL " + submission.getVideoUrl());
+            log.warn("Processing submission ID {} with video URL {}", submission.getId(), submission.getVideoUrl());
 
             if (postResponse == null) {
                 log.warn("getAllSubmissionsCBC -> No stats for url={} skipping or using defaults", submission.getVideoUrl());
@@ -258,7 +258,14 @@ public class SubmisionService {
                 quantity+=1;
             }
             
-            System.out.println("Submission ID " + submission.getId() + ": views=" + postResponse.views() + ", likes=" + postResponse.likes() + ", comments=" + postResponse.comments() + ", shares=" + postResponse.shares() + ", payment=" + payment + ", paymentStatus=" + paymentStatus);
+            log.warn("Submission ID {}: views={}, likes={}, comments={}, shares={}, payment={}, paymentStatus={}",
+                submission.getId(),
+                postResponse.views(),
+                postResponse.likes(),
+                postResponse.comments(),
+                postResponse.shares(),
+                payment,
+                paymentStatus);
             showFullSubmissions.add(
                 new ShowFullSubmission(
                     submission.getId(),
@@ -453,6 +460,7 @@ public class SubmisionService {
     }
 
     public MetricsCreatorResponse getMetricsCreator(Long userId){
+        
         MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(submisionRepository.findAllBySocialMediaUserId(userId));
         Wallet wallet = walletRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found for user id " + userId));
         if (metricsSimple.quantity()==0){
