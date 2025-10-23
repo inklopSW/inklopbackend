@@ -207,14 +207,17 @@ public class SubmisionService {
         Long viewsIg=0L;
         List<ShowFullSubmission> showFullSubmissions = new ArrayList<>();
         List<String> urls= submissions.stream().map(Submission::getVideoUrl).toList();
-        
+        System.out.println("URLs to fetch stats: " + urls);
 
         Map<String, VideoStatsResponse> postsByUrl = scrapperService.getAllPosts(urls);
+        System.out.println("Fetched video stats for URLs: " + postsByUrl.keySet());
+
 
         for (Submission submission : submissions) {
-            BigDecimal payment= new BigDecimal(0);
-
+            BigDecimal payment= BigDecimal.ZERO;
             VideoStatsResponse postResponse= postsByUrl.get(submission.getVideoUrl());
+            System.out.println("Processing submission ID " + submission.getId() + " with video URL " + submission.getVideoUrl());
+
             if (postResponse == null) {
                 log.warn("getAllSubmissionsCBC -> No stats for url={} skipping or using defaults", submission.getVideoUrl());
                 continue; // o usar valores por defecto
@@ -228,46 +231,47 @@ public class SubmisionService {
                 payment=new BigDecimal(0);
             }
 
+            // paymentStatus base
             PaymentStatus paymentStatus= PaymentStatus.PENDING;
-
-            if (submission.getSubmissionStatus().equals(SubmissionStatus.REJECTED)){
+            if (submission.isRejected()){
                 paymentStatus= PaymentStatus.REJECTED;
             }
 
             if (submission.getSubmissionPayment() != null) {
-                payment=submission.getSubmissionPayment().getPaymentReceived();
+                payment=submission.getSubmissionPayment().getPayment();
                 paymentStatus=submission.getSubmissionPayment().getPaymentStatus();
             }
 
-            if (submission.getSubmissionStatus().equals(SubmissionStatus.APPROVED) || submission.getSubmissionStatus().equals(SubmissionStatus.PAYED)){
+            if (submission.isApproved() || submission.getSubmissionStatus().equals(SubmissionStatus.PAYED)){
                 if (submission.getSocialMedia().getPlatform().equals(Platform.INSTAGRAM)){
-                viewsIg+=postResponse.views();
-            } else if (submission.getSocialMedia().getPlatform().equals(Platform.FACEBOOK)){
-                viewsFb+=postResponse.views();
-            } else if(submission.getSocialMedia().getPlatform().equals(Platform.TIKTOK)){
-                viewsTk+=postResponse.views();            }
-
-            views+= postResponse.views();
-            likes+= postResponse.likes();
-            comments+= postResponse.comments();
-            shareCount+= postResponse.shares();
-            quantity+=1;
+                    viewsIg+=postResponse.views();
+                } else if (submission.getSocialMedia().getPlatform().equals(Platform.FACEBOOK)){
+                    viewsFb+=postResponse.views();
+                } else if(submission.getSocialMedia().getPlatform().equals(Platform.TIKTOK)){
+                    viewsTk+=postResponse.views();            
+                }
+                
+                views+= postResponse.views();
+                likes+= postResponse.likes();
+                comments+= postResponse.comments();
+                shareCount+= postResponse.shares();
+                quantity+=1;
             }
-            
 
-            showFullSubmissions.add(new ShowFullSubmission(
-                submission.getId(),
-                submission.getSubmissionStatus(),
-                paymentStatus,
-                submission.getSubmittedAt(),
-                submission.getDescription(),
-                new IncomeDto(
-                    payment,
-                    submission.getCampaign().getCurrency(),
-                    submission.getCampaign().getName(),
-                    submission.getCampaign().getLogo()
-                ),
-                postResponse
+            showFullSubmissions.add(
+                new ShowFullSubmission(
+                    submission.getId(),
+                    submission.getSubmissionStatus(),
+                    paymentStatus,
+                    submission.getSubmittedAt(),
+                    submission.getDescription(),
+                    new IncomeDto(
+                        payment,
+                        submission.getCampaign().getCurrency(),
+                        submission.getCampaign().getName(),
+                        submission.getCampaign().getLogo()
+                        ),
+                    postResponse
             ));
         }
 
@@ -282,7 +286,6 @@ public class SubmisionService {
             viewsIg, 
             showFullSubmissions
         );
-
     }
 
     public MetricsCampaignResponse getMetricsByCampaignId (Long campaignId){
