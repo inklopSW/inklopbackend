@@ -257,7 +257,8 @@ public class SubmisionService {
                 shareCount+= postResponse.shares();
                 quantity+=1;
             }
-
+            
+            System.out.println("Submission ID " + submission.getId() + ": views=" + postResponse.views() + ", likes=" + postResponse.likes() + ", comments=" + postResponse.comments() + ", shares=" + postResponse.shares() + ", payment=" + payment + ", paymentStatus=" + paymentStatus);
             showFullSubmissions.add(
                 new ShowFullSubmission(
                     submission.getId(),
