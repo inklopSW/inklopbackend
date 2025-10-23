@@ -28,6 +28,7 @@ import com.inklop.inklop.entities.valueObject.campaign.CampaignStatus;
 import com.inklop.inklop.entities.valueObject.campaign.Currency;
 import com.inklop.inklop.entities.valueObject.campaign.PaymentStatus;
 import com.inklop.inklop.entities.valueObject.submission.SubmissionStatus;
+import com.inklop.inklop.entities.valueObject.user.CreatorType;
 import com.inklop.inklop.entities.valueObject.user.Platform;
 import com.inklop.inklop.mappers.ScrapperMapper;
 import com.inklop.inklop.repositories.SocialMediaRepository;
@@ -159,7 +160,12 @@ public class SubmisionService {
         submission.setDescription("Submission pending review");
         submission.setSubmissionStatus(SubmissionStatus.PENDING);
         submission=submisionRepository.save(submission);
-        asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
+
+        if (campaign.getType().equals(CreatorType.UGC)){
+            asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
+        } else {
+            
+        }
 
         return new ShowFullSubmission(
                 submission.getId(),
@@ -181,7 +187,11 @@ public class SubmisionService {
             throw new RuntimeException("Submission is not in pending status");
         }
 
-        asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
+        if (submission.getCampaign().getType().equals(CreatorType.UGC)){
+            asyncVideoEvaluator.evaluateSubmissionAsync(submission.getId());
+        } else {
+            
+        }
         IncomeDto incomeDto= new IncomeDto(BigDecimal.ZERO, submission.getCampaign().getCurrency(), submission.getCampaign().getName(), submission.getCampaign().getLogo());
         return new ShowFullSubmission(
             submission.getId(),

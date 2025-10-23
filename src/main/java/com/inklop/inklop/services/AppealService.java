@@ -85,42 +85,62 @@ public class AppealService {
 
     @Transactional
     public AppealResponse setAppealStatus(Long id, AppealStatusRequest appealStatusRequest) {
-        Appeal appeal = appealRepository.findById(id).orElseThrow(() -> new RuntimeException("Appeal no encontrada con id " + id));
+        Appeal appeal = appealRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Appeal no encontrada con id " + id));
+        Submission submission = appeal.getSubmission();
+
+        AppealStatus current = appeal.getAppealStatus();
+        AppealStatus target = appealStatusRequest.status();
+
         // Logica de cambio de estado
-        if (appeal.getAppealStatus() == AppealStatus.APPROVED || appeal.getAppealStatus() == AppealStatus.REJECTED) {
+        if (current == AppealStatus.APPROVED || current == AppealStatus.REJECTED) {
             throw new RuntimeException("Appeal ya ha sido procesada");
         }
 
         // From PENDING to IN_PROGRESS
-        if (appeal.getAppealStatus() == AppealStatus.PENDING ) {
-            if (appealStatusRequest.status() == AppealStatus.IN_REVIEW) {
+        if (current == AppealStatus.PENDING) {
+            if (target == AppealStatus.IN_REVIEW) {
                 appeal.setAppealStatus(AppealStatus.IN_REVIEW);
                 appeal.setAdminComment("Video under review");
             }
-            if (appealStatusRequest.status() == AppealStatus.CANCELED) {
+            if (target == AppealStatus.CANCELED) {
                 appeal.setAppealStatus(AppealStatus.CANCELED);
                 appeal.setAdminComment("Video appeal canceled by user request");
+                if (appeal.getToCreator()) {
+                    submission.setSubmissionStatus(SubmissionStatus.FINAL_REJECTED);
+                } else {
+                    submission.setSubmissionStatus(SubmissionStatus.FINAL_APPROVED);
+                }
+                submissionRepository.save(submission);
             }
         }
 
         // From IN_REVIEW to APPROVED or REJECTED
-        if (appeal.getAppealStatus() == AppealStatus.IN_REVIEW){
-            if (appealStatusRequest.status() == AppealStatus.APPROVED) {
-                appeal.setAppealStatus(AppealStatus.APPROVED);
-                appeal.setAdminComment(appealStatusRequest.adminComment());
-                Submission submission = appeal.getSubmission();
-                submission.setSubmissionStatus(SubmissionStatus.FINAL_APPROVED);
-                submissionRepository.save(submission);
+        if (current == AppealStatus.IN_REVIEW){
+            if (target == AppealStatus.APPROVED) {
+                if (submissionRepository.existsBySavedVideoUrl(appeal.getSubmission().getVideoUrl())){
+                    appeal.setAppealStatus(AppealStatus.REJECTED);
+                    appeal.setAdminComment("Video has already been submitted");
+                    submission.setSubmissionStatus(SubmissionStatus.FINAL_REJECTED);
+                    submissionRepository.save(submission);
+                } else {
+                    appeal.setAppealStatus(AppealStatus.APPROVED);
+                    appeal.setAdminComment(appealStatusRequest.adminComment());
+                    submission.setSubmissionStatus(SubmissionStatus.FINAL_APPROVED);
+                    submissionRepository.save(submission);
+                }
             }
 
-            if (appealStatusRequest.status() == AppealStatus.REJECTED) {
+            if (target == AppealStatus.REJECTED) {
                 appeal.setAppealStatus(AppealStatus.REJECTED);
                 appeal.setAdminComment(appealStatusRequest.adminComment());
-                Submission submission = appeal.getSubmission();
                 submission.setSubmissionStatus(SubmissionStatus.FINAL_REJECTED);
                 submissionRepository.save(submission);
             }
         }
+
+        appeal = appealRepository.save(appeal);
+
         return appealMapper.toAppealResponse(appeal, null);
     }
 }

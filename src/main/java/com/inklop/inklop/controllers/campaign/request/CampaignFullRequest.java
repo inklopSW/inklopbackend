@@ -29,9 +29,11 @@ public record CampaignFullRequest(
     CampaignCategoryType category,
     // Campaign countries
     List <CountryDto> countries,
+
     // Campaign Requeriments
     List <RequerimentDto> requeriments,
     // Social Media
+    Long sm_id,
     Boolean hasTiktok,
     Boolean hasInstagram,
     Boolean hasFacebook

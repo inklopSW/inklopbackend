@@ -1,14 +1,16 @@
 package com.inklop.inklop.services;
 
 import com.inklop.inklop.repositories.BusinessRepository;
+import com.inklop.inklop.repositories.SocialMediaRepository;
 import com.inklop.inklop.repositories.UserRepository;
 import com.inklop.inklop.repositories.WalletRepository;
-import com.inklop.inklop.controllers.campaign.response.FullCampaignResponse.SocialMediaDto;
+import com.inklop.inklop.controllers.campaign.response.UGCCampaignResponse.SocialMediaDto;
+import com.inklop.inklop.controllers.user.response.SocialMediaResponse;
 import com.inklop.inklop.controllers.webSocket.response.NotificationResponse;
 import com.inklop.inklop.entities.User;
 import com.inklop.inklop.controllers.campaign.request.AddCampaignRequest;
 import com.inklop.inklop.controllers.campaign.request.CampaignFullRequest;
-import com.inklop.inklop.controllers.campaign.response.FullCampaignResponse;
+import com.inklop.inklop.controllers.campaign.response.UGCCampaignResponse;
 import com.inklop.inklop.controllers.campaign.response.ShortCampaignResponse;
 import com.inklop.inklop.controllers.campaign.response.TransaccionComplete;
 import com.inklop.inklop.repositories.Campaign.*;
@@ -49,6 +51,7 @@ public class CampaignService {
     private final WalletRepository walletRepository;
     private final RoomService roomService;
     private final UserRepository userRepository;
+    private final SocialMediaRepository socialMediaRepository;
 
 
     private String getSpanishDate(LocalDate date) {
@@ -80,7 +83,6 @@ public class CampaignService {
         campaignRepository.saveAll(updatedCampaigns);
     }
 
-
     public TransaccionComplete createFullCampaign(CampaignFullRequest request){
         Campaign campaign = new Campaign();
         campaign.setName(request.title());
@@ -104,6 +106,15 @@ public class CampaignService {
         campaign.setHasTiktok(request.hasTiktok());
         campaign.setHasInstagram(request.hasInstagram());
         campaign.setHasFacebook(request.hasFacebook());
+
+        if (campaign.getType().equals(CreatorType.CLIPPER)){
+            for (SocialMedia sm : campaign.getBusiness().getUser().getSocialMedias()){
+                if (sm.getId().equals(request.sm_id())){
+                    campaign.setSm_id(sm.getId());
+                }
+            }
+        }
+
         // categorias
         campaign = campaignRepository.save(campaign);
         CampaignCategory category = new CampaignCategory();
@@ -313,7 +324,7 @@ public class CampaignService {
 
 
 
-    public FullCampaignResponse getFullCampaignById(Long campaignId) {
+    public UGCCampaignResponse getFullCampaignById(Long campaignId) {
         Campaign campaign = campaignRepository.findById(campaignId).get();
         Integer durationinDays = (int)ChronoUnit.DAYS.between(campaign.getStartDate(), campaign.getEndDate());
         String typeAux;
@@ -347,17 +358,34 @@ public class CampaignService {
             socialMediaDtos.add(socialMediaDto);
         }
 
-        List<FullCampaignResponse.ubicationDto> ubications = new ArrayList<>();
+        List<UGCCampaignResponse.ubicationDto> ubications = new ArrayList<>();
 
         for (CampaignCountry country: campaign.getCampaignCountries()){
-            FullCampaignResponse.ubicationDto ubication = new FullCampaignResponse.ubicationDto(
+            UGCCampaignResponse.ubicationDto ubication = new UGCCampaignResponse.ubicationDto(
                 country.getCountry(),
                 country.getDepartment()
             );
             ubications.add(ubication);
         }
 
-        return new FullCampaignResponse(
+
+        SocialMediaResponse socialMediaResponse = null;
+
+        if (campaign.getType().equals(CreatorType.CLIPPER)){
+            SocialMedia socialMedia = socialMediaRepository.findById(campaign.getSm_id())
+                .orElseThrow(() -> new IllegalStateException("SocialMedia not found for campaign.sm_id=" + campaign.getSm_id()));
+            socialMediaResponse = new SocialMediaResponse(
+                socialMedia.getId(),
+                socialMedia.getPlatform(),
+                socialMedia.getName(),
+                socialMedia.getNickname(),
+                socialMedia.getAvatar(),
+                socialMedia.getLink()
+            );
+        }
+
+
+        return new UGCCampaignResponse(
             campaign.getId(),
             campaign.getName(),
             campaign.getLogo(),
@@ -385,12 +413,15 @@ public class CampaignService {
             campaign.getTextInfluencer(),
             socialMediaDtos,
             ubications,
-            new FullCampaignResponse.BusinessDto(
+            new UGCCampaignResponse.BusinessDto(
                 campaign.getBusiness().getId(),
                 campaign.getBusiness().getBusinessName(),
                 campaign.getBusiness().getAvatarBusiness(),
                 campaign.getBusiness().getSector()
-            ));
+            ),
+            socialMediaResponse
+            );
+
         
     }
 

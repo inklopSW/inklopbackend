@@ -3,12 +3,13 @@ package com.inklop.inklop.controllers.campaign.response;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.inklop.inklop.controllers.user.response.SocialMediaResponse;
 import com.inklop.inklop.entities.valueObject.campaign.Currency;
 import com.inklop.inklop.entities.valueObject.campaign.TypeText;
 import com.inklop.inklop.entities.valueObject.user.Platform;
 import com.inklop.inklop.entities.valueObject.user.SectorBusiness;
 
-public record FullCampaignResponse(
+public record UGCCampaignResponse(
     Long id,
     String title,
     String logo,
@@ -38,7 +39,9 @@ public record FullCampaignResponse(
     // Social Media
     List<SocialMediaDto> socialMedias,
     List<ubicationDto> ubications,
-    BusinessDto business
+    BusinessDto business,
+
+    SocialMediaResponse socialMedia
     
 ) {
     public record SocialMediaDto(

@@ -90,6 +90,9 @@ public class Campaign {
     @Column(name="payment_status")
     private PaymentStatus paymentStatus;
 
+    // for clippers kick 
+    private Long sm_id;
+
     // Social Media Presence, filter
     private Boolean hasTiktok;
 
