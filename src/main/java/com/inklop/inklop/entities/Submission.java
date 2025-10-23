@@ -19,7 +19,6 @@ import java.util.UUID;
 @Builder(toBuilder=true)
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Submission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

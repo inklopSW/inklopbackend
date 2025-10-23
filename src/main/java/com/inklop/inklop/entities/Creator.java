@@ -15,7 +15,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Creator {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

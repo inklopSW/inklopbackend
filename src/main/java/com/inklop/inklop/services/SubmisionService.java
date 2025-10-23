@@ -196,9 +196,7 @@ public class SubmisionService {
     
     }
 
-
-    private MetricsSimple getAllSubmissionsCBC(Long id, String type){
-        List<Submission> submissions = new ArrayList<>();
+    private MetricsSimple getMetricsAndMappingSubmissions(List<Submission> submissions){
         Long views=0L;
         Long likes=0L;
         Long comments=0L;
@@ -207,15 +205,6 @@ public class SubmisionService {
         Long viewsFb=0L;
         Long viewsTk=0L;
         Long viewsIg=0L;
-
-        if(type.equals("creator")){
-            submissions = submisionRepository.findBySocialMediaUserId(id);
-        } else if(type.equals("campaign")){
-            submissions = submisionRepository.findByCampaignId(id);
-        } else {
-            submissions = submisionRepository.findByCampaignBusinessUserId(id);
-        }
-        
         List<ShowFullSubmission> showFullSubmissions = new ArrayList<>();
         List<String> urls= submissions.stream().map(Submission::getVideoUrl).toList();
         
@@ -297,7 +286,9 @@ public class SubmisionService {
     }
 
     public MetricsCampaignResponse getMetricsByCampaignId (Long campaignId){
-        MetricsSimple metricsSimple = getAllSubmissionsCBC(campaignId,"campaign");
+        MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(
+            submisionRepository.findAllByCampaignId(campaignId)
+        );
         Campaign campaign = campaignRepository.findById(campaignId).get();
         return new MetricsCampaignResponse(
             campaignId,
@@ -332,12 +323,16 @@ public class SubmisionService {
                 new BigDecimal(0)
             );
         }
+
+        List<Submission> submissions = new ArrayList<>();
         BigDecimal totalBudget=new BigDecimal(0);
         for (Campaign campaign : campaigns) {
             totalBudget = totalBudget.add(campaign.getTotalBudget());
+            submissions.addAll(campaign.getSubmissions());
         }
 
-        MetricsSimple metricsSimple = getAllSubmissionsCBC(bussinessId,"bussiness");
+        MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(submissions); // is better to use jpql with joins but idk uwu
+
         if (metricsSimple.quantity()==0){
             return new MetricsBusinessResponse(
                 bussinessId,
@@ -454,7 +449,7 @@ public class SubmisionService {
     }
 
     public MetricsCreatorResponse getMetricsCreator(Long userId){
-        MetricsSimple metricsSimple = getAllSubmissionsCBC(userId,"creator");
+        MetricsSimple metricsSimple = getMetricsAndMappingSubmissions(submisionRepository.findAllBySocialMediaUserId(userId));
         Wallet wallet = walletRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Wallet not found for user id " + userId));
         if (metricsSimple.quantity()==0){
             return new MetricsCreatorResponse(

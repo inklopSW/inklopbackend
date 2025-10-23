@@ -52,7 +52,7 @@ public class SubmissionController {
         return ResponseEntity.ok(submisionService.getMetricsByCampaignId(campaignId));
     }
 
-    @GetMapping("/metrics/bussiness/{bussinessId}")
+    @GetMapping("/metrics/business/{bussinessId}")
     public ResponseEntity<MetricsBusinessResponse> getBussienssMetrics(@PathVariable Long bussinessId){
         return ResponseEntity.ok(submisionService.getMetricsBussiness(bussinessId));
     }
