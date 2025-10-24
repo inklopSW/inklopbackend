@@ -1,7 +1,7 @@
 package com.inklop.inklop.controllers.campaign;
 
 
-import com.inklop.inklop.controllers.campaign.response.FullCampaignResponse;
+import com.inklop.inklop.controllers.campaign.response.UGCCampaignResponse;
 import com.inklop.inklop.controllers.campaign.response.ShortCampaignResponse;
 import com.inklop.inklop.controllers.campaign.response.TransaccionComplete;
 
@@ -54,7 +54,7 @@ public class CampaignController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FullCampaignResponse> getCampaignById(@PathVariable Long id){
+    public ResponseEntity<UGCCampaignResponse> getCampaignById(@PathVariable Long id){
         return ResponseEntity.ok(campaignService.getFullCampaignById(id));
     }
 
